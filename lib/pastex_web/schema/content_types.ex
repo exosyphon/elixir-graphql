@@ -45,6 +45,19 @@ defmodule PastexWeb.Schema.ContentTypes do
     end
   end
 
+  object :content_subscriptions do
+    field :paste_created, :paste do
+      config fn _, _ ->
+        {:ok, topic: "*"}
+      end
+
+      trigger [:create_paste],
+        topic: fn _paste ->
+          "*"
+        end
+    end
+  end
+
   input_object :create_paste_input do
     field :name, non_null(:string)
     field :description, :string

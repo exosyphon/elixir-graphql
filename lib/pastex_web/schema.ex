@@ -18,4 +18,8 @@ defmodule PastexWeb.Schema do
   mutation do
     import_fields :content_mutations
   end
+
+  subscription do
+    import_fields :content_subscriptions
+  end
 end
