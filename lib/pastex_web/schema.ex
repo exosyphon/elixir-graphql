@@ -19,50 +19,75 @@ defmodule PastexWeb.Schema do
     field :name, non_null(:string)
     field :description, :string
     @desc "A paste can contain multiple files"
-    field :files, non_null(list_of(:file))
+    field :files, non_null(list_of(:file)) do
+      resolve &get_files/3
+    end
   end
 
   object :file do
-    field :name, :string
+    field :paste_id, :integer
+    field :name, :string do
+      resolve fn file, _, _ ->
+        {:ok , Map.get(file, :name) || "Untitled"}
+      end
+    end
     field :body, :string
-    field :paste, non_null(:paste)
+    field :paste, non_null(:paste) do
+      resolve &get_paste_from_file/3
+    end
   end
 
   @pastes [
     %{
-      name: "Hello World",
-      files: [
-        %{
-          body: ~s[IO.puts("Hello World")]
-        }
-      ]
+      id: 1,
+      name: "Hello World"
     },
     %{
+      id: 2,
       name: "Help!",
-      description: "I don't know what I'm doing!!",
-      files: [
-        %{
-          name: "foo.ex",
-          body: """
-          defmodule Foo do
-            def foo, do: Bar.bar()
-          end
-          """
-        },
-        %{
-          name: "bar.ex",
-          body: """
-          defmodule Bar do
-            def bar, do: Foo.foo()
-          end
-          """
-        }
-      ]
+      description: "I don't know what I'm doing!!"
     }
   ]
 
-  def list_pastes(_, _, _) do
+  @files [
+    %{
+      paste_id: 1,
+      body: ~s[IO.puts("Hello World")]
+    },
+    %{
+      paste_id: 2,
+      name: "foo.ex",
+      body: """
+      defmodule Foo do
+        def foo, do: Bar.bar()
+      end
+      """
+    },
+    %{
+      paste_id: 2,
+      name: "bar.ex",
+      body: """
+      defmodule Bar do
+        def bar, do: Foo.foo()
+      end
+      """
+    }
+  ]
+
+  defp list_pastes(root_value, _, _) do
+    root_value |> IO.inspect label: "root_value"
     IO.puts "Executing Pastes"
     {:ok, @pastes}
+  end
+
+  defp get_files(paste, _, _) do
+    IO.puts "Executing get files"
+    IO.inspect paste
+    files = Enum.filter(@files, fn file -> file.paste_id == paste.id end)
+    {:ok, files}
+  end
+
+  defp get_paste_from_file(file, _, _) do
+    {:ok, Enum.find(@pastes, fn paste -> paste.id == file.paste_id end)}
   end
 end
