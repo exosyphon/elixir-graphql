@@ -1,5 +1,7 @@
 defmodule PastexWeb.UserSocket do
   use Phoenix.Socket
+  use Absinthe.Phoenix.Socket,
+    schema: PastexWeb.Schema
 
   ## Channels
   # channel "room:*", PastexWeb.RoomChannel
